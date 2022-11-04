@@ -1,0 +1,87 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  namespace: monitoring
+  name: isp-telegraf
+spec:
+  selector:
+    matchLabels:
+      app: isp-telegraf
+      type: ds
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 6
+  template:
+    metadata:
+      labels:
+        app: isp-telegraf
+        type: ds
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: "hlasta-pi-144"
+      tolerations:
+        - key: node-role.kubernetes.io/master
+          effect: NoSchedule
+      containers:
+        - name: isp-telegraf
+          image: arm32v7/telegraf
+          securityContext:
+            privileged: true
+          env:
+            - name: HOSTNAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: "HOST_PROC"
+              value: "/rootfs/proc"
+            - name: "HOST_SYS"
+              value: "/rootfs/sys"
+          volumeMounts:
+            - name: dev-vchiq
+              mountPath: /dev/vchiq
+            - name: sys
+              mountPath: /rootfs/sys
+              readOnly: true
+            - name: proc
+              mountPath: /rootfs/proc
+              readOnly: true
+            - name: docker-socket
+              mountPath: /var/run/docker.sock
+            - name: varrunutmp
+              mountPath: /var/run/utmp
+              readOnly: true
+            - name: varlog
+              mountPath: /var/log
+              readOnly: true
+            - name: varlibdockercontainers
+              mountPath: /var/lib/docker/containers
+              readOnly: true
+            - name: config
+              mountPath: /etc/telegraf
+              readOnly: true
+      volumes:
+        - name: dev-vchiq
+          hostPath:
+            path: /dev/vchiq
+        - name: sys
+          hostPath:
+            path: /sys
+        - name: docker-socket
+          hostPath:
+            path: /var/run/docker.sock
+        - name: proc
+          hostPath:
+            path: /proc
+        - name: varrunutmp
+          hostPath:
+            path: /var/run/utmp
+        - name: varlog
+          hostPath:
+            path: /var/log
+        - name: varlibdockercontainers
+          hostPath:
+            path: /var/lib/docker/containers
+        - name: config
+          configMap:
+            name: isp-telegraf

@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  namespace: monitoring
+  name: isp-telegraf
+data:
+  telegraf.conf: |+
+    [agent]
+      interval = "60s"
+      round_interval = true
+      metric_batch_size = 1000
+      metric_buffer_limit = 10000
+      collection_jitter = "0s"
+      flush_interval = "10s"
+      flush_jitter = "0s"
+      precision = ""
+      debug = true
+      quiet = false
+      logfile = ""
+      hostname = ""
+      omit_hostname = false
+    [[inputs.internet_speed]]
+      interval = "45m"
+      enable_file_download = true    
+    [[outputs.influxdb]]
+      urls = ["http://192.168.0.144:32394"]
+      database = "telegraf"
+      write_consistency = "any"
+      timeout = "5s"
