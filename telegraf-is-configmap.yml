@@ -26,4 +26,4 @@ data:
       urls = ["http://192.168.0.144:32394"]
       database = "telegraf"
       write_consistency = "any"
-      timeout = "5s"
+      timeout = "15s"
